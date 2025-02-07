@@ -1,0 +1,7 @@
+{
+  "name": "EBike",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
