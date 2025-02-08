@@ -78,21 +78,19 @@
               <span class="text-white font-medium">Tổng thanh toán:</span>
               <span class="text-[#0A84FF] font-medium">{{ formatVND(calculateFinalTotal()) }}</span>
             </div>
-          </div>
+            <div class="p-4">
+                <ion-button
+                    expand="block"
+                    class="bg-[#0A84FF] rounded-lg h-12"
+                    @click="handlePayment"
+                >
+                    Xác nhận thanh toán
+                </ion-button>
+            </div>
+        </div>
+        <div class="h-40"></div>
         </div>
       </ion-content>
-  
-      <ion-footer class="ion-no-border bg-[#1C1C1E]">
-        <div class="p-4">
-          <ion-button
-            expand="block"
-            class="bg-[#0A84FF] rounded-lg h-12"
-            @click="handlePayment"
-          >
-            Xác nhận thanh toán
-          </ion-button>
-        </div>
-      </ion-footer>
     </ion-modal>
   </template>
   
@@ -111,7 +109,6 @@
     IonRadioGroup,
     IonRadio,
     IonInput,
-    IonFooter,
     IonIcon,
   } from '@ionic/vue'
   import { closeOutline } from 'ionicons/icons'
@@ -165,7 +162,7 @@
   
   <style scoped>
   .payment-modal {
-    --height: 90%;
+    --height: 100%;
     --border-radius: 20px 20px 0 0;
   }
   
