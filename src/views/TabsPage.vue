@@ -35,7 +35,7 @@ import {
   IonContent,
   IonRouterOutlet 
 } from '@ionic/vue'
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute()
@@ -60,11 +60,30 @@ const activeTab = ref(0)
 const navRef = ref<HTMLElement | null>(null)
 const tabRefs = ref<HTMLElement[]>([])
 
+const updateCirclePosition = (index: number) => {
+  setTimeout(() => {
+      if (navRef.value && tabRefs.value[index]) {
+        const tabElement = tabRefs.value[index]
+        navRef.value.style.setProperty('--position-x-active', `${tabElement.offsetLeft}px`)
+      }
+    }, 0)
+}
+
+watch(() => route.path, (newPath) => {
+  const index = routes.findIndex(r => r.path === newPath)
+  if (index !== -1) {
+    activeTab.value = index
+    updateCirclePosition(index)
+  }
+}, { immediate: true })
+
 const handleTabClick = async (navigate: () => void, index: number) => {
   navigate()
   activeTab.value = index
 
   await nextTick()
+
+  updateCirclePosition(index)
 
   if (!navRef.value || !tabRefs.value[index]) return
 
@@ -78,9 +97,12 @@ onMounted(() => {
   const currentRouteIndex = routes.findIndex(r => r.path === route.path)
   if (currentRouteIndex !== -1) {
     activeTab.value = currentRouteIndex
-    if (navRef.value && tabRefs.value[currentRouteIndex]) {
-      navRef.value.style.setProperty('--position-x-active', `${tabRefs.value[currentRouteIndex].offsetLeft}px`)
-    }
+    setTimeout(() => {
+      if (navRef.value && tabRefs.value[currentRouteIndex]) {
+        const tabElement = tabRefs.value[currentRouteIndex]
+        navRef.value.style.setProperty('--position-x-active', `${tabElement.offsetLeft}px`)
+      }
+    }, 0)
   }
 })
 </script>
@@ -130,7 +152,7 @@ nav .effect {
   left: 0;
   bottom: 0;
   height: calc(var(--w-h-item) + 10px);
-  background: #0a0c0f;
+  background: #1C1E24;
   z-index: -1;
   overflow: hidden;
 }

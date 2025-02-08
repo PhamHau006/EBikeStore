@@ -71,8 +71,8 @@
               class="bg-[#3C3C3E] rounded-lg text-white px-3"
             />
             <ion-button
-              class="w-22 h-12 m-0"
-              :disabled="!promoCode"
+              class="w-36 h-12 m-0"
+              :disabled="!promoCode || cartItems.length === 0"
               @click="applyPromoCode"
             >
               Áp dụng
@@ -91,6 +91,7 @@
           expand="block" 
           class="bg-[#0A84FF] rounded-lg h-12"
           @click="showConfirmation"
+          :disabled="cartItems.length === 0"
         >
           Thanh toán!
         </ion-button>
