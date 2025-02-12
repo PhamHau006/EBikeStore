@@ -30,7 +30,15 @@ const routes: Array<RouteRecordRaw> = [
       {
         path: 'tab4',
         component: () => import('@/views/Tab4Page.vue')
-      }
+      },
+      {
+        path: 'login',
+        component: () => import('@/views/Login.vue')
+      },
+      {
+        path: 'product',
+        component: () => import('@/views/ProductPage.vue')
+      },
     ]
   }
 ]

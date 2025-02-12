@@ -45,7 +45,8 @@ const routes = [
   { path: '/tabs/tab2' },
   { path: '/tabs/tab3' },
   { path: '/tabs/tab4' },
-  { path: '/tabs/tab5' }
+  { path: '/tabs/tab5' },
+  { path: '/tabs/login' },
 ]
 
 const icons = [
