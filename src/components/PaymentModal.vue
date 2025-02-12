@@ -125,6 +125,10 @@
   const paymentMethod = ref('credit')
   const address = ref('')
   const phone = ref('')
+  const getProducts = () => {
+    const product = fetch('https://fakestoreapi.com/products')
+    .then(response => response.json())
+  }
   
   onMounted(() => {
     console.log('Component mounted. Props:', props)
