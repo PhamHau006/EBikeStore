@@ -51,24 +51,22 @@
         </div>
         <h2 class="text-xl font-bold mt-4">Best Selling</h2>
         <div class="grid grid-cols-2 gap-4 mt-4">
-          <div class="relative bg-gray-800  rounded-lg">
+          <div v-for="items in product" :key="items.id" class="relative bg-gray-800  rounded-lg">
             <img
-              src="https://storage.googleapis.com/a1aa/image/p06c8RGeML7IiUNF0m_gPPi2vvVaGsUIJGFv0PyI994.jpg"
+              :src="items.image"
               alt="A road bike"
-              class="w-full rounded-lg object-cover "
-              width="200"
-              height="200"
+              class="w-full rounded-lg object-cover max-w-[300px] min-h-[200px] max-h-[300px]"
             />
             <div class="absolute top-4 right-4 text-blue-500">
               <i class="fas fa-heart"></i>
             </div>
             <div class="mt-4">
-              <p class="text-gray-400">Road Bike</p>
+              <p class="text-gray-400">{{ items.title }}</p>
               <h2 class="text-xl font-bold">PEUGETO - LR01</h2>
-              <p class="text-lg">$ 1999.99</p>
+              <p class="text-lg">$ {{ items.price }}</p>
             </div>
           </div>
-          <div class="relative bg-gray-800  rounded-lg">
+          <!-- <div class="relative bg-gray-800  rounded-lg">
             <img
               src="https://storage.googleapis.com/a1aa/image/7FdnxBAAxVshUu9XxmIg0I0hRNxtf28lLCXa2-R_CBs.jpg"
               alt="A road helmet"
@@ -84,7 +82,7 @@
               <span class="  text-lg font-bold px-4 ">SMITH - Trade</span>
               <p class="text-lg p-4">$ 120</p>
             </div>
-          </div>
+          </div> -->
         </div>
         <h2 class="text-xl font-bold mt-4">All Products</h2>
         <div class="grid grid-cols-2 gap-4 mt-4">
@@ -181,6 +179,37 @@
 
 <script setup lang="ts">
 import { IonPage, IonContent } from '@ionic/vue';
+import { onMounted, ref } from 'vue';
+
+interface Bike {
+  id: string;
+  title: string;
+  price: number;
+  description: string;
+  image: string;
+}
+
+const product = ref<Bike[]>()
+
+// load product
+const getProducts = async () => {
+  const fetchData = await fetch('https://fakestoreapi.com/products')6
+  .then(response => response.json())
+  .then(data => {
+    product.value = data.map((item: Bike) => ({
+      id: item.id,
+      title: item.title,
+      price: item.price,
+      description: item.description,
+      image: item.image
+    }))
+    console.log('product', product.value)
+  })
+}
+
+onMounted(async () => {
+  await getProducts()
+})
 </script>
 
 <style scoped>

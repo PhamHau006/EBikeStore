@@ -1,5 +1,7 @@
 
 <template>
+   <ion-page>
+    <ion-content>
     <div class="bg-gray-900 flex items-center justify-center min-h-screen">
       <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-sm">
         <h2 class="text-2xl font-bold text-center text-white mb-6">Đăng Nhập</h2>
@@ -49,12 +51,12 @@
         </p>
       </div>
     </div>
+  </ion-content>
+</ion-page>
   </template>
   
-  <script>
-  export default {
-    name: 'LoginForm',
-  };
+  <script setup lang="ts">
+ import { IonPage, IonContent } from '@ionic/vue';
   </script>
   
   <style scoped>

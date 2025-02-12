@@ -1,5 +1,7 @@
 
 <template>
+  <ion-page>
+    <ion-content>
   <div class="bg-gray-900 text-white font-sans p-4 h-screen overflow-y-auto">
     <div class="flex justify-between items-center">
       <div class="text-lg">9:41</div>
@@ -172,20 +174,23 @@
       <button class="p-4"><i class="fas fa-file-alt text-white"></i></button>
     </div>
   </div>
+</ion-content>
+</ion-page>
 </template>
 
-<script>
-export default {
-  name: 'ChooseYourBike',
-  mounted() {
+<script setup lang="ts" >
+import { IonPage, IonContent } from '@ionic/vue';
+import { onMounted } from 'vue';
+
+  onMounted( () =>  {
     const filterButton = document.getElementById('filter-button');
     const filterContent = document.getElementById('filter-content');
 
-    filterButton.addEventListener('click', function () {
-      filterContent.classList.toggle('hidden');
+    filterButton?.addEventListener('click', function () {
+      filterContent?.classList.toggle('hidden');
     });
-  }
-}
+  })
+
 </script>
 
 <style scoped>

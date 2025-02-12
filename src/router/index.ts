@@ -39,6 +39,10 @@ const routes: Array<RouteRecordRaw> = [
         path: 'product',
         component: () => import('@/views/OderHistory.vue')
       },
+      {
+        path: 'orderhistory',
+        component: () => import('@/views/OderHistory.vue')
+      }
     ]
   }
 ]

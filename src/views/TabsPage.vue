@@ -42,11 +42,13 @@ const route = useRoute()
 
 const routes = [
   { path: '/tabs/tab1' },
-  { path: '/tabs/tab2' },
+  { path: '/tabs/product' },
   { path: '/tabs/tab3' },
   { path: '/tabs/tab4' },
   { path: '/tabs/tab5' },
   { path: '/tabs/login' },
+  { path: '/tabs/tab2' },
+  { path: '/tabs/orderhistory' },
 ]
 
 const icons = [

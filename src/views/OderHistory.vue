@@ -1,5 +1,7 @@
 
 <template>
+    <ion-page>
+      <ion-content>
     <div class="bg-gray-900 text-white font-sans p-4 h-screen overflow-y-auto">
       <div class="flex justify-between items-center">
         <div class="text-lg">9:41</div>
@@ -105,61 +107,65 @@
         </div>
       </div>
     </div>
+  </ion-content>
+</ion-page>
   </template>
   
-  <script>
-  export default {
-    name: 'OrderHistory',
-    methods: {
-      toggleModal(orderId) {
-        const modal = document.getElementById("orderModal");
-        const orderDetails = document.getElementById("orderDetails");
-        if (orderId) {
-          orderDetails.innerHTML = `
-            <h3 class="text-lg font-bold mb-4">Order #${orderId}</h3>
-            <div class="mb-4">
-              <div class="flex items-center justify-between">
-                <div class="text-center">
-                  <div class="bg-blue-600 text-white py-2 px-4 rounded-full flex items-center justify-center">
-                    <i class="fas fa-box mr-2"></i> Đã lấy đơn
-                  </div>
-                  <div class="mt-2 text-gray-400">2023-10-01</div>
-                </div>
-                <div class="flex-1 h-1 bg-gray-600 mx-2 relative">
-                  <div class="absolute left-0 top-0 h-1 bg-blue-600" style="width: 50%;"></div>
-                </div>
-                <div class="text-center">
-                  <div class="bg-blue-600 text-white py-2 px-4 rounded-full flex items-center justify-center">
-                    <i class="fas fa-truck mr-2"></i> Đang vận chuyển
-                  </div>
-                  <div class="mt-2 text-gray-400">2023-10-02</div>
-                </div>
-                <div class="flex-1 h-1 bg-gray-600 mx-2 relative">
-                  <div class="absolute left-0 top-0 h-1 bg-gray-600" style="width: 0%;"></div>
-                </div>
-                <div class="text-center">
-                  <div class="bg-gray-600 text-white py-2 px-4 rounded-full flex items-center justify-center">
-                    <i class="fas fa-check mr-2"></i> Đã giao hàng
-                  </div>
-                  <div class="mt-2 text-gray-400">2023-10-03</div>
-                </div>
-                <div class="flex-1 h-1 bg-gray-600 mx-2 relative">
-                  <div class="absolute left-0 top-0 h-1 bg-gray-600" style="width: 0%;"></div>
-                </div>
-                <div class="text-center">
-                  <div class="bg-gray-600 text-white py-2 px-4 rounded-full flex items-center justify-center">
-                    <i class="fas fa-flag-checkered mr-2"></i> Hoàn thành
-                  </div>
-                  <div class="mt-2 text-gray-400">2023-10-04</div>
-                </div>
+  <script setup lang="ts">
+  import { IonPage, IonContent } from '@ionic/vue';
+  import { ref } from 'vue';
+  
+  const toggleModal = (orderId?: number) => {
+    const modal = document.getElementById("orderModal");
+    const orderDetails = document.getElementById("orderDetails");
+  
+    if (orderId && orderDetails) {
+      orderDetails.innerHTML = `
+        <h3 class="text-lg font-bold mb-4">Order #${orderId}</h3>
+        <div class="mb-4">
+          <div class="flex items-center justify-between">
+            <div class="text-center">
+              <div class="bg-blue-600 text-white py-2 px-4 rounded-full flex items-center justify-center">
+                <i class="fas fa-box mr-2"></i> Đã lấy đơn
               </div>
+              <div class="mt-2 text-gray-400">2023-10-01</div>
             </div>
-          `;
-        }
-        modal.classList.toggle("hidden");
-      }
+            <div class="flex-1 h-1 bg-gray-600 mx-2 relative">
+              <div class="absolute left-0 top-0 h-1 bg-blue-600" style="width: 50%;"></div>
+            </div>
+            <div class="text-center">
+              <div class="bg-blue-600 text-white py-2 px-4 rounded-full flex items-center justify-center">
+                <i class="fas fa-truck mr-2"></i> Đang vận chuyển
+              </div>
+              <div class="mt-2 text-gray-400">2023-10-02</div>
+            </div>
+            <div class="flex-1 h-1 bg-gray-600 mx-2 relative">
+              <div class="absolute left-0 top-0 h-1 bg-gray-600" style="width: 0%;"></div>
+            </div>
+            <div class="text-center">
+              <div class="bg-gray-600 text-white py-2 px-4 rounded-full flex items-center justify-center">
+                <i class="fas fa-check mr-2"></i> Đã giao hàng
+              </div>
+              <div class="mt-2 text-gray-400">2023-10-03</div>
+            </div>
+            <div class="flex-1 h-1 bg-gray-600 mx-2 relative">
+              <div class="absolute left-0 top-0 h-1 bg-gray-600" style="width: 0%;"></div>
+            </div>
+            <div class="text-center">
+              <div class="bg-gray-600 text-white py-2 px-4 rounded-full flex items-center justify-center">
+                <i class="fas fa-flag-checkered mr-2"></i> Hoàn thành
+              </div>
+              <div class="mt-2 text-gray-400">2023-10-04</div>
+            </div>
+          </div>
+        </div>
+      `;
     }
-  }
+  
+    if (modal) {
+      modal.classList.toggle("hidden");
+    }
+  };
   </script>
   
   <style scoped>
