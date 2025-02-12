@@ -2,12 +2,12 @@
     <ion-page>
       <ion-header class="ion-no-border">
         <ion-toolbar class="bg-[#1A1D26] px-4">
-          <ion-buttons slot="start">
+          <ion-buttons slot="start" class="mt-3">
             <ion-button class="text-white" @click="router.back()">
               <ion-icon :icon="chevronBack" />
             </ion-button>
           </ion-buttons>
-          <ion-title class="font-bold text-white">PEUGETO - LR01</ion-title>
+          <ion-title class="font-bold text-white mt-3">PEUGETO - LR01</ion-title>
         </ion-toolbar>
       </ion-header>
   
@@ -21,14 +21,14 @@
             <!-- Product Image -->
             <div class="w-full h-[80vh] flex items-center justify-center p-8">
               <img 
-                :src="'../../public/bike1.png'" 
+                :src="'/bike1.png'" 
                 alt="Peugeot LR01 Bicycle" 
                 class="max-h-full object-contain"
               />
             </div>
   
             <!-- Tab Buttons -->
-            <div class="absolute z-50 bottom-0 w-full flex justify-around p-4 bg-[#1E2128]/80 backdrop-blur-sm">
+            <div class="absolute z-50 bottom-0 w-full flex justify-around p-10 bg-[#1E2128]/80 backdrop-blur-sm rounded-3xl">
               <button 
                 @click="openSheet('description')"
                 class="text-gray-400 py-2 px-6 rounded-lg"
@@ -104,7 +104,7 @@
   
             <!-- Price and Cart -->
             <div class="flex items-center justify-between pt-4 mt-8">
-              <div class="text-2xl font-bold text-blue-400">$ 1999.99</div>
+              <div class="text-2xl font-bold text-blue-400 ml-3">{{ formatVND(2000000) }}</div>
               <ion-button 
                 class="h-12 px-6 font-medium"
                 expand="block"
@@ -134,6 +134,7 @@
   } from '@ionic/vue';
   import { chevronBack } from 'ionicons/icons';
 import router from '@/router';
+import { formatVND } from '@/utils/utils';
   
   const isSheetOpen = ref(false);
   const activeTab = ref('description');
@@ -176,5 +177,13 @@ import router from '@/router';
   
   .product-sheet-modal::part(content) {
     border-radius: 20px 20px 0 0;
+  }
+
+  ion-toolbar {
+    --color: white;
+    --border-style: double;
+    --min-height: 80px;
+    --padding-top: 40px;
+    --padding-bottom: 20px;
   }
   </style>

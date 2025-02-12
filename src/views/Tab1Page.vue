@@ -193,7 +193,8 @@ const product = ref<Bike[]>()
 
 // load product
 const getProducts = async () => {
-  const fetchData = await fetch('https://fakestoreapi.com/products')6
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const fetchData = await fetch('https://fakestoreapi.com/products')
   .then(response => response.json())
   .then(data => {
     product.value = data.map((item: Bike) => ({

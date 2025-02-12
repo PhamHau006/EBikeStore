@@ -53,7 +53,7 @@ const routes = [
 
 const icons = [
   'fa-solid fa-house',
-  'fa-solid fa-bicycle',
+  'fa-solid fa-map',
   'fa-solid fa-bag-shopping',
   'fa-solid fa-user',
   'fa-solid fa-cog'
