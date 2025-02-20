@@ -21,8 +21,10 @@
     "@ionic/vue": "^8.0.0",
     "@ionic/vue-router": "^8.0.0",
     "@tailwindcss/vite": "^4.0.4",
+    "capacitor-native-biometric": "^4.2.2",
     "EBike": "file:",
     "ionicons": "^7.0.0",
+    "swiper": "^11.2.4",
     "tailwindcss": "^4.0.4",
     "vue": "^3.3.0",
     "vue-router": "^4.2.0"

@@ -2,43 +2,40 @@
   <ion-page>
     <nav ref="navRef">
       <ul>
-        <router-link 
-          v-for="(route, index) in routes" 
-          :key="index"
-          :to="route.path"
-          :class="{ active: $route.path === route.path }"
-          custom 
-          v-slot="{ navigate }"
-        >
-          <li 
-            ref="tabRefs"
-            @click="handleTabClick(navigate, index)"
-          >
+        <router-link v-for="(route, index) in routes" :key="index" :to="route.path" custom v-slot="{ navigate }">
+          <li ref="tabRefs" @click="handleTabClick(route.path, index)">
             <i :class="icons[index]"></i>
           </li>
         </router-link>
+
+
       </ul>
       <div class="effect">
         <div class="circle"></div>
       </div>
     </nav>
-    
+    <br> <br>
     <ion-content>
-      <ion-router-outlet></ion-router-outlet>
+      <keep-alive>
+        <ion-router-outlet></ion-router-outlet>
+      </keep-alive>
+
     </ion-content>
+    <br> <br> <br> <br>
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { 
-  IonPage, 
+import {
+  IonPage,
   IonContent,
-  IonRouterOutlet 
+  IonRouterOutlet
 } from '@ionic/vue'
 import { ref, onMounted, nextTick, watch } from 'vue';
 import { useRoute } from 'vue-router';
-
+import { useRouter } from "vue-router";
 const route = useRoute()
+const router = useRouter();
 
 const routes = [
   { path: '/tabs/tab1' },
@@ -49,6 +46,7 @@ const routes = [
   { path: '/tabs/login' },
   { path: '/tabs/tab2' },
   { path: '/tabs/orderhistory' },
+  { path: '/tabs/checkout' },
 ]
 
 const icons = [
@@ -57,6 +55,7 @@ const icons = [
   'fa-solid fa-bag-shopping',
   'fa-solid fa-user',
   'fa-solid fa-cog'
+
 ]
 
 const activeTab = ref(0)
@@ -65,11 +64,11 @@ const tabRefs = ref<HTMLElement[]>([])
 
 const updateCirclePosition = (index: number) => {
   setTimeout(() => {
-      if (navRef.value && tabRefs.value[index]) {
-        const tabElement = tabRefs.value[index]
-        navRef.value.style.setProperty('--position-x-active', `${tabElement.offsetLeft}px`)
-      }
-    }, 0)
+    if (navRef.value && tabRefs.value[index]) {
+      const tabElement = tabRefs.value[index]
+      navRef.value.style.setProperty('--position-x-active', `${tabElement.offsetLeft}px`)
+    }
+  }, 0)
 }
 
 watch(() => route.path, (newPath) => {
@@ -80,21 +79,10 @@ watch(() => route.path, (newPath) => {
   }
 }, { immediate: true })
 
-const handleTabClick = async (navigate: () => void, index: number) => {
-  navigate()
-  activeTab.value = index
+const handleTabClick = async (path: string, index: number) => {
+  window.location.href = path;
+};
 
-  await nextTick()
-
-  updateCirclePosition(index)
-
-  if (!navRef.value || !tabRefs.value[index]) return
-
-  const tabElement = tabRefs.value[index]
-  const navElement = navRef.value
-
-  navElement.style.setProperty('--position-x-active', `${tabElement.offsetLeft}px`)
-}
 
 onMounted(() => {
   const currentRouteIndex = routes.findIndex(r => r.path === route.path)

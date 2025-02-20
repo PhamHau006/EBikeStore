@@ -1,9 +1,10 @@
 <template>
+  <!-- Giỏ hàng -->
   <ion-page class="bg-[#1C1C1E]">
     <ion-header class="ion-no-border">
       <div class="bg-[#1C1C1E] px-4 pt-4">
         <div class="flex items-center justify-center">
-          <h1 class="text-xl text-white font-medium ml-3">🛒</h1>
+          <h1 class="text-xl text-white font-medium ml-3">🛒 Giỏ Hàng</h1>
         </div>
       </div>
     </ion-header>
@@ -12,7 +13,7 @@
       <ion-list class="bg-[#1C1C1E] px-4 py-2">
         <ion-item
           v-for="item in cartItems"
-          :key="item.id"
+          :key="`${item.id}-${item.color}-${item.size}`"
           class="mb-4 rounded-xl bg-[#2C2C2E]"
           lines="none"
         >
@@ -27,6 +28,7 @@
               </div>
               <div class="flex-1">
                 <span class="text-white text-sm font-medium">{{ item.name }}</span>
+                <p class="text-gray-400 text-sm">Màu: {{ item.color }} | Size: {{ item.size }}</p>
                 <p class="text-[#0A84FF] text-sm mt-1">{{ formatVND(item.price) }}</p>
               </div>
             </div>
@@ -34,7 +36,7 @@
               <ion-button
                 fill="clear"
                 class="h-8 w-8 rounded-lg bg-[#0A84FF] m-0 p-0"
-                @click="updateQuantity(item.id, item.quantity + 1)"
+                @click="updateQuantity(item, item.quantity + 1)"
               >
                 <ion-icon :icon="add" class="text-white text-lg" />
               </ion-button>
@@ -42,7 +44,7 @@
               <ion-button
                 fill="clear"
                 class="h-8 w-8 rounded-lg bg-[#0A84FF] m-0 p-0"
-                @click="updateQuantity(item.id, Math.max(1, item.quantity - 1))"
+                @click="updateQuantity(item, Math.max(1, item.quantity - 1))"
               >
                 <ion-icon :icon="remove" class="text-white text-lg" />
               </ion-button>
@@ -52,7 +54,7 @@
                 :icon="closeCircleOutline" 
                 class="text-white text-lg" 
                 size="large"
-                @click="cartItems = cartItems.filter(cartItem => cartItem.id !== item.id)"
+                @click="removeFromCart(item)"
               />
             </div>
           </div>
@@ -60,169 +62,112 @@
       </ion-list>
 
       <div class="px-4 mt-4 mb-10">
-        <div class="bg-[#2C2C2E] rounded-xl p-4 mb-4">
-          <div class="flex gap-2">
-            <ion-input
-              v-model="promoCode"
-              :clear-input="true"
-              label="Mã giảm giá" 
-              label-placement="floating" 
-              fill="outline"
-              class="bg-[#3C3C3E] rounded-lg text-white px-3"
-            />
-            <ion-button
-              class="w-36 h-12 m-0"
-              :disabled="!promoCode || cartItems.length === 0"
-              @click="applyPromoCode"
-            >
-              Áp dụng
-            </ion-button>
-          </div>
-          <div v-if="appliedDiscount" class="text-[#0A84FF] text-sm mt-2">
-            Giảm giá: {{ appliedDiscount }}%
-          </div>
-        </div>
-
         <div class="flex justify-between items-center mb-4">
           <span class="text-white text-sm">Tổng tiền:</span>
-          <span class="text-[#0A84FF] font-medium">{{ formatVND(calculateFinalTotal()) }}</span>
+          <span class="text-[#0A84FF] font-medium">{{ formatVND(calculateTotal()) }}</span>
         </div>
         <ion-button 
           expand="block" 
           class="bg-[#0A84FF] rounded-lg h-12"
-          @click="showConfirmation"
+          @click="checkout"
           :disabled="cartItems.length === 0"
         >
           Thanh toán!
         </ion-button>
       </div>
-      <div class="h-20">
-
-      </div>
+      <div class="h-20"></div>
     </ion-content>
-
-    <ion-alert
-      :is-open="showAlert"
-      header="Xác nhận thanh toán"
-      message="Bạn có chắc chắn muốn tiến hành thanh toán?"
-      :buttons="[
-        {
-          text: 'Hủy',
-          role: 'cancel',
-          handler: () => {
-            showAlert = false
-          }
-        },
-        {
-          text: 'Đồng ý',
-          handler: () => {
-            showAlert = false
-            showPaymentModal = true
-          }
-        }
-      ]"
-    />
-
-    <PaymentModal
-      :is-open="showPaymentModal"
-      :total="calculateTotal()"
-      :discount="appliedDiscount || undefined"
-      @close="showPaymentModal = false"
-      @payment-confirmed="handlePaymentConfirmed"
-    />
   </ion-page>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { 
-  IonPage, 
-  IonHeader, 
-  IonContent,
-  IonList, 
-  IonItem,
-  IonButton,
-  IonInput,
-  IonAlert,
-  IonIcon,
-} from '@ionic/vue'
-import { add, remove, closeCircleOutline } from 'ionicons/icons'
-import PaymentModal from '@/components/PaymentModal.vue'
-import { formatVND } from '@/utils/utils'
-
+import { ref, onMounted, watchEffect, watch } from "vue";
+import { IonPage, IonContent, IonList, IonItem, IonButton, IonIcon } from "@ionic/vue";
+import { add, remove, closeCircleOutline } from "ionicons/icons";
+import { formatVND } from "@/utils/utils";
+import { useRoute, useRouter } from "vue-router";
+// ✅ Cập nhật kiểu dữ liệu của CartItem
 interface CartItem {
-  id: number
-  name: string
-  price: number
-  quantity: number
-  image: string
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  color: string;       // ✅ Vẫn giữ tên màu (cho UI)
+  size: string;        // ✅ Vẫn giữ tên kích thước (cho UI)
+  maMau: number;       // ✅ Thêm ID màu cho API
+  maKichThuoc: number; // ✅ Thêm ID kích thước cho API
 }
 
-const cartItems = ref<CartItem[]>([
-  {
-    id: 1,
-    name: 'PEUGETO - LR01',
-    price: 45990000,
-    quantity: 1,
-    image: '/bike1.png'
-  },
-  {
-    id: 2,
-    name: 'PILOT - CHROMOLY 520', 
-    price: 42990000,
-    quantity: 1,
-    image: '/bike2.png'
-  },
-  {
-    id: 3,
-    name: 'SMITH - Trade',
-    price: 2790000,
-    quantity: 1,
-    image: '/bike3.png'
-  },
-])
 
-const promoCode = ref('')
-const appliedDiscount = ref<number | null>(null)
-const showAlert = ref(false)
-const showPaymentModal = ref(false)
+const cartItems = ref<CartItem[]>([]);
 
-const updateQuantity = (id: number, newQuantity: number) => {
-  const item = cartItems.value.find(item => item.id === id)
-  if (item) {
-    item.quantity = newQuantity
+// 🛒 Load giỏ hàng từ `localStorage`
+const loadCart = () => {
+  console.log(localStorage.getItem("cart"))
+  cartItems.value = JSON.parse(localStorage.getItem("cart") || "[]");
+};
+
+
+// 🔄 Cập nhật số lượng sản phẩm trong giỏ hàng
+const updateQuantity = (item: CartItem, newQuantity: number) => {
+  // Tìm số lượng tồn kho của sản phẩm này
+  const stockKey = `${item.id}-${item.color}-${item.size}`;
+  const stock = localStorage.getItem(`stock_${stockKey}`);
+  const maxStock = stock ? parseInt(stock, 10) : 0;
+
+  // Nếu số lượng vượt quá số lượng tồn kho, giữ nguyên số lượng hiện tại
+  if (newQuantity > maxStock) {
+    alert(`Số lượng không được vượt quá ${maxStock} sản phẩm có sẵn!`);
+    return;
   }
-}
 
+  // Cập nhật số lượng sản phẩm
+  const updatedCart = cartItems.value.map((cartItem) =>
+    cartItem.id === item.id && cartItem.color === item.color && cartItem.size === item.size
+      ? { ...cartItem, quantity: newQuantity }
+      : cartItem
+  );
+
+  cartItems.value = updatedCart;
+  localStorage.setItem("cart", JSON.stringify(updatedCart));
+};
+
+
+// ❌ Xóa sản phẩm khỏi giỏ hàng
+const removeFromCart = (item: CartItem) => {
+  cartItems.value = cartItems.value.filter(
+    (cartItem) =>
+      cartItem.id !== item.id || cartItem.color !== item.color || cartItem.size !== item.size
+  );
+  localStorage.setItem("cart", JSON.stringify(cartItems.value));
+};
+
+// 💰 Tính tổng tiền
 const calculateTotal = () => {
-  return cartItems.value.reduce((total, item) => total + (item.price * item.quantity), 0)
-}
+  return cartItems.value.reduce((total, item) => total + item.price * item.quantity, 0);
+};
+// 🔄 Tự động cập nhật giỏ hàng khi `localStorage` thay đổi
+watchEffect(() => {
+  loadCart();
+});
+const route = useRoute ()
+ watch ( ( ) => route.params,() => {loadCart} )
 
-const calculateFinalTotal = () => {
-  const subtotal = calculateTotal()
-  if (!appliedDiscount.value) return subtotal
-  return subtotal * (1 - appliedDiscount.value / 100)
-}
+const router = useRouter();
 
-const applyPromoCode = () => {
-  if (promoCode.value === 'SAVE10') {
-    appliedDiscount.value = 10
-  } else if (promoCode.value === 'SAVE20') {
-    appliedDiscount.value = 20
-  } else {
-    appliedDiscount.value = null
-  }
-  promoCode.value = ''
-}
+const checkout = () => {
+  // Lưu giỏ hàng vào localStorage để chuyển sang CheckoutPage.vue
+  localStorage.setItem("cart", JSON.stringify(cartItems.value));
 
-const showConfirmation = () => {
-  showAlert.value = true
-}
+  // Điều hướng đến trang CheckoutPage.vue
+  router.push("/checkout");
+};
 
-const handlePaymentConfirmed = (paymentDetails: any) => {
-  console.log('Payment confirmed:', paymentDetails)
-  showPaymentModal.value = false
-}
+
+
+
+onMounted(loadCart);
 </script>
 
 <style>

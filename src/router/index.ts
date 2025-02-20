@@ -37,12 +37,38 @@ const routes: Array<RouteRecordRaw> = [
       },
       {
         path: 'product',
-        component: () => import('@/views/OderHistory.vue')
+        component: () => import('@/views/ProductPage.vue')
       },
       {
         path: 'orderhistory',
         component: () => import('@/views/OderHistory.vue')
-      }
+      },
+      {
+        path: 'tab4/:id',
+        component: () => import('@/views/Tab4Page.vue'),
+        props: true
+      },
+      {
+        path: '/google-callback',
+        component: () => import('@/views/GoogleCallback.vue'),
+        props: true
+      },
+      {
+        path: '/checkout',
+        component: () => import('@/views/CheckoutPage.vue'),
+        props: true
+      },
+      {
+        path: '/register',
+        component: () => import('@/views/RegisterAccounts.vue'),
+        props: true
+      },
+      {
+        path: "/forgot-password",
+        name: "ForgotPassword",
+        component: () => import("@/views/ForgotPassword.vue"),
+      },
+      
     ]
   }
 ]

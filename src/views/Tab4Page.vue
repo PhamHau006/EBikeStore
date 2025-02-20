@@ -1,189 +1,361 @@
 <template>
-    <ion-page>
-      <ion-header class="ion-no-border">
-        <ion-toolbar class="bg-[#1A1D26] px-4">
-          <ion-buttons slot="start" class="mt-3">
-            <ion-button class="text-white" @click="router.back()">
-              <ion-icon :icon="chevronBack" />
+  <!-- Chi tiết sản phẩm -->
+  <ion-page>
+    <ion-header class="ion-no-border">
+      <ion-toolbar class="bg-[#1A1D26] px-4 shadow-md">
+        <ion-buttons slot="start">
+          <ion-button class="text-white" @click="$router.back()">
+            <ion-icon :icon="chevronBack" />
+          </ion-button>
+        </ion-buttons>
+        <ion-title class="font-bold text-white text-lg">{{ product?.tenSp || 'Sản phẩm' }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="bg-[#1A1D26] text-white font-roboto h-full flex flex-col">
+      <div class="relative min-h-screen flex flex-col flex-grow overflow-y-auto p-6">
+        <div v-if="product">
+          <!-- Ảnh sản phẩm -->
+          <div class="text-center">
+            <img v-if="product?.hinh" :src="'https://localhost:7029/Hinh/SanPham/' + product?.hinh" alt="Hình sản phẩm"
+              class="rounded-lg w-full max-h-96 object-contain shadow-lg" />
+            <h1 class="text-3xl font-bold text-white mt-4">{{ product?.tenSp }}</h1>
+            <p class="text-gray-400 mt-2">{{ product?.moTa }}</p>
+          </div>
+
+          <!-- Chọn màu sắc -->
+          <div class="mt-6">
+
+            <div class="flex gap-2 flex-wrap">
+              <h2 class="text-2xl font-bold text-white mb-2" style=" font-size: large;">Màu sắc:</h2>
+              <button v-for="(color, index) in availableColors" :key="index" @click="selectColor(color)"
+                :class="['color-btn', { 'selected': selectedColor === color }]">
+                {{ color }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Chọn kích thước -->
+          <div class="mt-6">
+
+            <div class="flex gap-2 flex-wrap">
+              <h2 class="text-2xl font-bold text-white mb-2" style=" font-size: large;">Kích thước:</h2>
+              <button v-for="(size, index) in availableSizes" :key="index" @click="selectSize(size)"
+                :class="['size-btn', { 'selected': selectedSize === size }]">
+                {{ size }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Chọn số lượng -->
+
+          <div class="mt-6 flex items-center gap-4">
+            <h2 class="text-2xl font-bold text-white" style="font-size: large;">Số lượng:</h2>
+            <button class="quantity-btn" @click="decreaseQuantity" :disabled="quantity <= 1">-</button>
+            <input type="number" v-model="quantity" class="quantity-input" style="height: 40px;"
+              @input="validateQuantity" />
+            <button class="quantity-btn" @click="increaseQuantity" :disabled="quantity >= selectedStock">+</button>
+          </div>
+
+
+          <!-- Thông tin sản phẩm -->
+          <div class="mt-8 py-6 border-t border-gray-600">
+            <p class="text-white mt-4">
+              <strong class="text-lg" style=" ">Số lượng tồn:</strong>
+            </p>
+            <p v-if="selectedStock > 0" class="text-3xl font-bold text-blue-400 text-center mt-2">
+              {{ selectedStock }}
+            </p>
+            <p v-else class="text-3xl font-bold text-red-500 mt-2 text-center" style=" font-size: large;">Hết hàng</p>
+
+            <p class="text-blue-400 font-bold text-xl mt-6" style=" font-size: 20px;">
+              <strong>Giá:</strong> {{ formatVND(selectedPrice) }}
+            </p>
+          </div>
+
+          <!-- Tổng tiền -->
+          <div class="mt-auto py-6 border-t border-gray-600">
+            <p class="text-2xl font-bold text-blue-400 ">
+              <strong>Tổng tiền:</strong> {{ formatVND(totalPrice) }}
+            </p>
+          </div>
+          <div class="mt-6">
+            <ion-button expand="block" class="cart-btn" @click="addToCart">
+              Thêm vào giỏ hàng
             </ion-button>
-          </ion-buttons>
-          <ion-title class="font-bold text-white mt-3">PEUGETO - LR01</ion-title>
-        </ion-toolbar>
-      </ion-header>
-  
-      <ion-content class="bg-[#1A1D26]">
-        <!-- Diagonal Background -->
-        <div class="relative h-full">
-          <div class="absolute top-0 right-0 w-3/4 h-full bg-[#2D5BFF] transform -skew-x-12 origin-top-right z-0"></div>
-          
-          <!-- Main Content -->
-          <div class="relative z-10 h-full">
-            <!-- Product Image -->
-            <div class="w-full h-[80vh] flex items-center justify-center p-8">
-              <img 
-                :src="'/bike1.png'" 
-                alt="Peugeot LR01 Bicycle" 
-                class="max-h-full object-contain"
-              />
-            </div>
-  
-            <!-- Tab Buttons -->
-            <div class="absolute z-50 bottom-0 w-full flex justify-around p-10 bg-[#1E2128]/80 backdrop-blur-sm rounded-3xl">
-              <button 
-                @click="openSheet('description')"
-                class="text-gray-400 py-2 px-6 rounded-lg"
-                :class="{ 'text-blue-400': activeTab === 'description' }"
-              >
-                Description
-              </button>
-              <button 
-                @click="openSheet('specification')"
-                class="text-gray-400 py-2 px-6 rounded-lg"
-                :class="{ 'text-blue-400': activeTab === 'specification' }"
-              >
-                Specification
-              </button>
-            </div>
           </div>
         </div>
-      </ion-content>
-  
-      <!-- Bottom Sheet Modal -->
-      <ion-modal
-        :is-open="isSheetOpen"
-        :breakpoints="[0, 0.85]"
-        :initial-breakpoint="0.85"
-        @didDismiss="closeSheet"
-        class="product-sheet-modal"
-      >
-        <ion-content class="bg-[#1E2128]">
-          <div class="p-6 space-y-6">
-            <div class="flex gap-6 border-b border-gray-700">
-              <button 
-                @click="activeTab = 'description'"
-                class="pb-2 px-1"
-                :class="activeTab === 'description' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400'"
-              >
-                Description
-              </button>
-              <button 
-                @click="activeTab = 'specification'"
-                class="pb-2 px-1"
-                :class="activeTab === 'specification' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-400'"
-              >
-                Specification
-              </button>
-            </div>
-  
-            <!-- Description Content -->
-            <div v-if="activeTab === 'description'">
-              <h2 class="text-2xl font-bold text-white mb-4">PEUGETO - LR01</h2>
-              <p class="text-gray-300 leading-relaxed">
-                The LR01 uses the same design as the most iconic bikes from PEUGEOT Cycles' 130-year history and combines it with agile, dynamic performance that's perfectly suited to navigating today's cities. As well as a lugged steel frame and iconic PEUGEOT black-and-white chequer design, this city bike also features a 16-speed Shimano Claris drivetrain.
-              </p>
-            </div>
-  
-            <!-- Specification Content -->
-            <div v-else>
-              <h2 class="text-2xl font-bold text-white mb-4">Specifications</h2>
-              <div class="space-y-4 text-gray-300">
-                <div class="flex justify-between">
-                  <span>Frame</span>
-                  <span>Steel</span>
-                </div>
-                <div class="flex justify-between">
-                  <span>Drivetrain</span>
-                  <span>16-speed Shimano Claris</span>
-                </div>
-                <div class="flex justify-between">
-                  <span>Weight</span>
-                  <span>10.5 kg</span>
-                </div>
-              </div>
-            </div>
-  
-            <!-- Price and Cart -->
-            <div class="flex items-center justify-between pt-4 mt-8">
-              <div class="text-2xl font-bold text-blue-400 ml-3">{{ formatVND(2000000) }}</div>
-              <ion-button 
-                class="h-12 px-6 font-medium"
-                expand="block"
-              >
-                ADD TO CART
-              </ion-button>
-            </div>
-            <div class="h-10"></div>
-          </div>
-        </ion-content>
-      </ion-modal>
-    </ion-page>
-  </template>
-  
-  <script setup lang="ts">
-  import { onMounted, onUnmounted, ref } from 'vue';
-  import { 
-    IonPage, 
-    IonHeader, 
-    IonToolbar, 
-    IonTitle, 
-    IonContent,
-    IonButton,
-    IonButtons,
-    IonIcon,
-    IonModal
-  } from '@ionic/vue';
-  import { chevronBack } from 'ionicons/icons';
-import router from '@/router';
+
+        <!-- Hiển thị nếu chưa có dữ liệu -->
+        <p v-else class="text-center text-white">Đang tải dữ liệu...</p>
+      </div>
+
+    </ion-content>
+
+
+  </ion-page>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonButtons, IonIcon } from '@ionic/vue';
+import { chevronBack } from 'ionicons/icons';
 import { formatVND } from '@/utils/utils';
-  
-  const isSheetOpen = ref(false);
-  const activeTab = ref('description');
-  
-  const openSheet = (tab: string) => {
-    activeTab.value = tab;
-    isSheetOpen.value = true;
+
+interface ChiTietSanPham {
+  maMau: number;
+  tenMau: string;
+  maKichThuoc: number;
+  tenKichThuoc: string;
+  soLuongTon: number;
+  donGia: number;
+}
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  color: string;       // ✅ Vẫn giữ tên màu (cho UI)
+  size: string;        // ✅ Vẫn giữ tên kích thước (cho UI)
+  maMau: number;       // ✅ Thêm ID màu cho API
+  maKichThuoc: number; // ✅ Thêm ID kích thước cho API
+}
+
+interface Product {
+  maSP: number;
+  tenSp: string;
+  thuongHieu: string;
+  hinh: string;
+  moTa: string;
+  chitietsanphams: ChiTietSanPham[];
+}
+
+const route = useRoute();
+const router = useRouter();
+const product = ref<Product | null>(null);
+const selectedColor = ref<string | null>(null);
+const selectedSize = ref<string | null>(null);
+const quantity = ref<number>(1);
+const selectedStock = ref<number>(0);
+const selectedPrice = ref<number>(0);
+const isLoggedIn = ref<boolean>(false);
+  const cartItems = ref([]);
+// Kiểm tra đăng nhập
+const checkLoginStatus = () => {
+  isLoggedIn.value = !!localStorage.getItem("AccessToken");
+};
+// Kiểm tra đăng nhập & Thêm vào giỏ hàng
+const addToCart = () => {
+  if (!isLoggedIn.value) {
+    alert("Bạn chưa đăng nhập! Chuyển đến trang đăng nhập sau 3 giây...");
+    setTimeout(() => {
+      router.push("/login");
+    }, 3000);
+    return;
+  }
+
+  const selectedVariant = product.value?.chitietsanphams.find(
+    (p) => p.tenMau === selectedColor.value && p.tenKichThuoc === selectedSize.value
+  );
+
+  if (!selectedVariant) {
+    alert("Vui lòng chọn màu sắc và kích thước trước khi thêm vào giỏ hàng.");
+    return;
+  }
+
+  const newItem = {
+    id: product.value?.maSP,
+    name: product.value?.tenSp,
+    image: `https://localhost:7029/Hinh/SanPham/${product.value?.hinh}`,
+    price: selectedPrice.value,
+    quantity: quantity.value,
+    color: selectedColor.value,
+    size: selectedSize.value,
+    maMau: selectedVariant.maMau,        
+    maKichThuoc: selectedVariant.maKichThuoc, 
   };
-  
-  const closeSheet = () => {
-    isSheetOpen.value = false;
-  };
 
-  onMounted(() => {
-    const nav = document.querySelector('nav');
-    if (nav) {
-      nav.style.display = 'none';
+  const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+  const existingItemIndex = existingCart.findIndex(
+    (item: any) =>
+      item.id === newItem.id && item.maMau === newItem.maMau && item.maKichThuoc === newItem.maKichThuoc
+  );
+
+  if (existingItemIndex !== -1) {
+    if (existingCart[existingItemIndex].quantity + newItem.quantity > selectedStock.value) {
+      alert(`Bạn chỉ có thể thêm tối đa ${selectedStock.value} sản phẩm vào giỏ!`);
+      return;
     }
-  });
+    existingCart[existingItemIndex].quantity += newItem.quantity;
+  } else {
+    existingCart.push(newItem);
+  }
 
-  onUnmounted(() => {
-    const nav = document.querySelector('nav');
-    if (nav) {
-      nav.style.display = 'block';
+  localStorage.setItem("cart", JSON.stringify(existingCart));
+  alert("Thêm vào giỏ hàng thành công!");
+};
+
+
+
+
+// Lấy dữ liệu sản phẩm
+const getProductDetail = async () => {
+  const productId = route.params.id;
+  try {
+    const response = await fetch(`https://localhost:7137/api/Home/GetProductById/${productId}`);
+    const data = await response.json();
+    if (data) {
+      product.value = data;
     }
-  });
-  </script>
-  
-  <style>
-  ion-button {
-    --background: #2D5BFF;
-    --background-hover: #2448cc;
-    --border-radius: 8px;
+  } catch (error) {
+    console.error("Lỗi khi tải dữ liệu sản phẩm:", error);
   }
-  
-  .product-sheet-modal {
-    --height: 55%;
-    --border-radius: 20px 20px 0 0;
-  }
-  
-  .product-sheet-modal::part(content) {
-    border-radius: 20px 20px 0 0;
-  }
+};
 
-  ion-toolbar {
-    --color: white;
-    --border-style: double;
-    --min-height: 80px;
-    --padding-top: 40px;
-    --padding-bottom: 20px;
+// Lấy danh sách màu sắc từ `chitietsanphams`
+const availableColors = computed(() => {
+  return product.value ? [...new Set(product.value.chitietsanphams.map(p => p.tenMau))] : [];
+});
+
+// Lấy danh sách kích thước dựa trên màu sắc đã chọn
+const availableSizes = computed(() => {
+  return product.value && selectedColor.value
+    ? product.value.chitietsanphams.filter(p => p.tenMau === selectedColor.value).map(p => p.tenKichThuoc)
+    : [];
+});
+
+// Chọn màu sắc
+const selectColor = (color: string) => {
+  selectedColor.value = color;
+  selectedSize.value = null;
+  selectedStock.value = 0;
+  selectedPrice.value = 0;
+};
+
+// Chọn kích thước
+const selectSize = (size: string) => {
+  selectedSize.value = size;
+  const variant = product.value?.chitietsanphams.find(p => p.tenMau === selectedColor.value && p.tenKichThuoc === size);
+  selectedStock.value = variant?.soLuongTon || 0;
+  selectedPrice.value = variant?.donGia || 0;
+};
+
+// Tổng tiền
+const totalPrice = computed(() => selectedPrice.value * quantity.value);
+
+// Xử lý kiểm tra số lượng nhập vào
+const validateQuantity = () => {
+  if (quantity.value < 1 || isNaN(quantity.value)) {
+    quantity.value = 1; // Không cho nhập số âm
   }
-  </style>
+  if (quantity.value > selectedStock.value) {
+    quantity.value = selectedStock.value; // Giới hạn không vượt quá tồn kho
+  }
+};
+
+// Tăng/Giảm số lượng
+const decreaseQuantity = () => {
+  if (quantity.value > 1) {
+    quantity.value--;
+  }
+};
+
+const increaseQuantity = () => {
+  if (quantity.value < selectedStock.value) {
+    quantity.value++;
+  }
+};
+onMounted(() => {
+  const storedCart = localStorage.getItem("cart");
+  if (storedCart) {
+    cartItems.value = JSON.parse(storedCart);
+    console.log("📢 Dữ liệu giỏ hàng trong trang thanh toán:", cartItems.value);
+  }
+});
+
+
+onMounted(() => {
+  checkLoginStatus();
+  getProductDetail();
+});
+
+</script>
+
+
+<style scoped>
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css');
+
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css');
+
+h1,
+h2 {
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* 🔵 Button chung */
+button {
+  transition: all 0.3s ease;
+}
+
+/* 🌈 Button Màu sắc & Kích thước */
+.color-btn,
+.size-btn {
+  background-color: #3a3d46;
+  color: #b0b3b8;
+  padding: 10px 18px;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease-in-out;
+  border: 2px solid transparent;
+}
+
+.color-btn:hover,
+.size-btn:hover {
+  background-color: #5267db;
+  color: #ffffff;
+}
+
+.color-btn.selected,
+.size-btn.selected {
+  background-color: #2d5bff;
+  color: white;
+  border: 2px solid #ffffff;
+  box-shadow: 0px 0px 12px rgba(45, 91, 255, 0.8);
+}
+
+/* 🔼🔽 Button số lượng */
+.quantity-btn {
+  background-color: #3a3d46;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out;
+}
+
+.quantity-btn:hover {
+  background-color: #2d5bff;
+  transform: scale(1.1);
+}
+
+/* 🆙 Ô nhập số lượng */
+.quantity-input {
+  width: 60px;
+  text-align: center;
+  background-color: #292c33;
+  color: white;
+  border: 2px solid #3a3d46;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.quantity-input:focus {
+  border-color: #2d5bff;
+  outline: none;
+  box-shadow: 0px 0px 8px rgba(45, 91, 255, 0.6);
+}
+</style>
