@@ -88,7 +88,9 @@
         <!-- Hiển thị nếu chưa có dữ liệu -->
         <p v-else class="text-center text-white">Đang tải dữ liệu...</p>
       </div>
-
+ <!-- Hộp thông báo -->
+ <ion-alert :is-open="alertConfig.isOpen" :header="alertConfig.title" :message="alertConfig.message"
+        :buttons="['OK']" @didDismiss="alertConfig.isOpen = false"></ion-alert>
     </ion-content>
 
 
@@ -141,29 +143,54 @@ const selectedStock = ref<number>(0);
 const selectedPrice = ref<number>(0);
 const isLoggedIn = ref<boolean>(false);
   const cartItems = ref([]);
+  // Biến alert
+const alertConfig = ref({
+  isOpen: false,
+  title: "",
+  message: ""
+});
 // Kiểm tra đăng nhập
 const checkLoginStatus = () => {
   isLoggedIn.value = !!localStorage.getItem("AccessToken");
 };
 // Kiểm tra đăng nhập & Thêm vào giỏ hàng
 const addToCart = () => {
+  // Kiểm tra đăng nhập
   if (!isLoggedIn.value) {
-    alert("Bạn chưa đăng nhập! Chuyển đến trang đăng nhập sau 3 giây...");
-    setTimeout(() => {
-      router.push("/login");
-    }, 3000);
+    alertConfig.value = {
+      isOpen: true,
+      title: "Thông báo",
+      message: "Bạn chưa đăng nhập! Chuyển đến trang đăng nhập sau 3 giây..."
+    };
+    setTimeout(() => router.push("/login"), 3000);
     return;
   }
 
+  // Kiểm tra nếu chưa chọn màu hoặc kích thước
+  if (!selectedColor.value || !selectedSize.value) {
+    alertConfig.value = {
+      isOpen: true,
+      title: "Lỗi",
+      message: "Vui lòng chọn màu sắc và kích thước!"
+    };
+    return;
+  }
+
+  // Tìm biến thể sản phẩm theo màu sắc và kích thước đã chọn
   const selectedVariant = product.value?.chitietsanphams.find(
     (p) => p.tenMau === selectedColor.value && p.tenKichThuoc === selectedSize.value
   );
 
   if (!selectedVariant) {
-    alert("Vui lòng chọn màu sắc và kích thước trước khi thêm vào giỏ hàng.");
+    alertConfig.value = {
+      isOpen: true,
+      title: "Lỗi",
+      message: "Sản phẩm không tồn tại với màu sắc và kích thước đã chọn!"
+    };
     return;
   }
 
+  // Tạo object sản phẩm để thêm vào giỏ hàng
   const newItem = {
     id: product.value?.maSP,
     name: product.value?.tenSp,
@@ -172,20 +199,27 @@ const addToCart = () => {
     quantity: quantity.value,
     color: selectedColor.value,
     size: selectedSize.value,
-    maMau: selectedVariant.maMau,        
-    maKichThuoc: selectedVariant.maKichThuoc, 
+    maMau: selectedVariant.maMau,
+    maKichThuoc: selectedVariant.maKichThuoc
   };
 
+  // Lấy giỏ hàng từ LocalStorage
   const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
 
+  // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
   const existingItemIndex = existingCart.findIndex(
     (item: any) =>
       item.id === newItem.id && item.maMau === newItem.maMau && item.maKichThuoc === newItem.maKichThuoc
   );
 
   if (existingItemIndex !== -1) {
+    // Nếu sản phẩm đã tồn tại, kiểm tra tồn kho trước khi tăng số lượng
     if (existingCart[existingItemIndex].quantity + newItem.quantity > selectedStock.value) {
-      alert(`Bạn chỉ có thể thêm tối đa ${selectedStock.value} sản phẩm vào giỏ!`);
+      alertConfig.value = {
+        isOpen: true,
+        title: "Thông báo",
+        message: `Bạn chỉ có thể thêm tối đa ${selectedStock.value} sản phẩm vào giỏ hàng!`
+      };
       return;
     }
     existingCart[existingItemIndex].quantity += newItem.quantity;
@@ -193,9 +227,17 @@ const addToCart = () => {
     existingCart.push(newItem);
   }
 
+  // Cập nhật giỏ hàng vào LocalStorage
   localStorage.setItem("cart", JSON.stringify(existingCart));
-  alert("Thêm vào giỏ hàng thành công!");
+
+  // Hiển thị thông báo thành công
+  alertConfig.value = {
+    isOpen: true,
+    title: "Thành công",
+    message: "Sản phẩm đã được thêm vào giỏ hàng!"
+  };
 };
+
 
 
 
