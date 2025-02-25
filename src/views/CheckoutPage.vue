@@ -117,6 +117,15 @@
           Xác nhận đặt hàng
         </ion-button>
       </div>
+       <!-- IonAlert để hiển thị thông báo -->
+       <ion-alert
+        :is-open="alertConfig.isOpen"
+        :header="alertConfig.title"
+        :message="alertConfig.message"
+        :buttons="['OK']"
+        @didDismiss="alertConfig.isOpen = false"
+      />
+
     </ion-content>
   </ion-page>
   <ion-header class="ion-no-border">
@@ -195,6 +204,22 @@ const wards = ref<LocationData[]>([]);
 const selectedProvince = ref("");
 const selectedDistrict = ref("");
 const selectedWard = ref("");
+// Biến lưu trạng thái hiển thị thông báo
+const alertConfig = ref({
+  isOpen: false,
+  title: "",
+  message: ""
+});
+
+// Hàm hiển thị thông báo
+const showAlert = (title: string, message: string) => {
+  alertConfig.value = {
+    isOpen: true,
+    title,
+    message
+  };
+};
+
 // 🔹 Lấy danh sách tỉnh/thành phố
 const fetchProvinces = async () => {
   try {
@@ -281,7 +306,6 @@ watchEffect(() => {
   fetchShippingFee();
 });
 
-
 const applyCoupon = async () => {
   if (!couponCode.value) {
     couponError.value = "Vui lòng nhập mã giảm giá!";
@@ -289,8 +313,22 @@ const applyCoupon = async () => {
   }
 
   try {
-    const response = await fetch(`https://localhost:7137/api/MaCoupons/GetAllCouponCode?keywords=${couponCode.value}`);
-    const result = await response.json();
+    console.log("📢 Đang kiểm tra mã giảm giá:", couponCode.value);
+
+    const response = await fetch(`https://localhost:7137/api/MaCoupons/GetAll?keywords=${couponCode.value}`);
+    console.log("📢 Response Status:", response.status);
+
+    // Nếu API không có nội dung, trả về lỗi
+    const responseText = await response.text();
+    console.log("📢 Response Text:", responseText);
+
+    if (!responseText) {
+      throw new Error("API không trả về dữ liệu!");
+    }
+
+    // Chuyển đổi dữ liệu từ API
+    const result = JSON.parse(responseText);
+    console.log("📢 API Response:", result);
 
     if (result.success && result.data.length > 0) {
       const coupon = result.data[0];
@@ -335,10 +373,13 @@ const applyCoupon = async () => {
       couponError.value = "Mã giảm giá không hợp lệ!";
     }
   } catch (error) {
-    console.error("Lỗi khi kiểm tra mã giảm giá:", error);
+    console.error("❌ Lỗi khi kiểm tra mã giảm giá:", error);
     couponError.value = "Lỗi hệ thống, vui lòng thử lại!";
   }
 };
+
+
+
 
 onMounted(() => {
   // 🛒 Lấy giỏ hàng từ localStorage
@@ -370,50 +411,48 @@ const calculateTotalAfterDiscount = () => {
   return Math.max(totalAfterDiscount, 0); // Đảm bảo không bị âm
 };
 
-
-
 const submitOrder = async () => {
+  // 🛑 Kiểm tra xem thông tin giao hàng có đầy đủ không
   if (!fullname.value || !phone.value || !address.value) {
-    alert("Vui lòng điền đầy đủ thông tin giao hàng.");
+    showAlert("Lỗi", "Vui lòng điền đầy đủ thông tin giao hàng.");
     return;
   }
 
-  // Lấy thông tin khách hàng từ localStorage
+  // 🛑 Lấy thông tin khách hàng từ `localStorage`
   const storedUser = localStorage.getItem("user");
-  const user = storedUser ? JSON.parse(storedUser) : null;
+  if (!storedUser) {
+    showAlert("Lỗi", "Bạn chưa đăng nhập. Vui lòng đăng nhập lại.");
+    router.push("/login");
+    return;
+  }
+  const user = JSON.parse(storedUser);
   const maKH = user?.maKH;
 
   if (!maKH) {
-    alert("Không thể xác định khách hàng. Vui lòng đăng nhập lại.");
+    showAlert("Lỗi", "Không thể xác định khách hàng. Vui lòng đăng nhập lại.");
     router.push("/login");
     return;
   }
 
+  // 🔹 Xây dựng danh sách sản phẩm trong đơn hàng
   const orderDetails = cartItems.value.map((item) => {
-    if (!item.color) {
-      console.error(`🚨 Lỗi: Sản phẩm ${item.name} không có MaMau!, item`);
-      alert(`Sản phẩm "${item.name}" không có mã màu. Vui lòng chọn lại.`);
-      throw new Error("Sản phẩm không có MaMau");
-    }
-
-    // Kiểm tra MaMau và MaKichThuoc có hợp lệ không
-    if (!item.maMau || !item.maKichThuoc) {
-      console.error("🚨 Lỗi: Thiếu MaMau hoặc MaKichThuoc", item);
-      alert("Mã màu hoặc mã kích thước không hợp lệ!");
-      throw new Error("Mã màu hoặc mã kích thước không hợp lệ!");
+    if (!item.color || !item.maMau || !item.maKichThuoc) {
+      console.error("🚨 Lỗi: Thiếu thông tin sản phẩm!", item);
+      showAlert("Lỗi", `Sản phẩm "${item.name}" không có màu/kích thước hợp lệ.`);
+      throw new Error("Dữ liệu sản phẩm không hợp lệ!");
     }
 
     return {
       MaSp: item.id,
-      MaMau: item.maMau,         // Gửi ID màu
-      MaKichThuoc: item.maKichThuoc,  // Gửi ID kích thước
+      MaMau: item.maMau,
+      MaKichThuoc: item.maKichThuoc,
       SoLuong: item.quantity,
       Gia: item.price,
       ThanhTien: item.quantity * item.price,
     };
   });
 
-  // Chuẩn bị dữ liệu gửi lên API
+  // 🔹 Xây dựng dữ liệu đơn hàng gửi lên API
   const orderData = {
     HoaDon: {
       MaKH: maKH,
@@ -432,25 +471,38 @@ const submitOrder = async () => {
   };
 
   try {
+    // 📢 Gửi yêu cầu đến API
     const response = await fetch("https://localhost:7137/api/Checkouts/CheckoutOrders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderData),
     });
 
-    const result = await response.json();
+    console.log("📢 Response Status:", response.status);
+
+    // 🔍 Kiểm tra phản hồi từ API
+    const responseText = await response.text();
+    console.log("📢 Response Text:", responseText);
+
+    if (!responseText) {
+      throw new Error("Không có phản hồi từ API.");
+    }
+
+    const result = JSON.parse(responseText);
+
     if (result.Success) {
-      alert("Đặt hàng thành công!");
-      localStorage.removeItem("cart");
+      showAlert("Thành công", "Đơn hàng của bạn đã được đặt thành công!");
+      localStorage.removeItem("cart"); // 🗑️ Xóa giỏ hàng sau khi đặt thành công
       router.push("/tabs/orderhistory");
     } else {
-      alert(result.Message || "Thanh toán thành công");
+      showAlert("Lỗi", result.Message || "Thanh toán thất bại.");
     }
   } catch (error) {
-    console.error("Lỗi khi đặt hàng:", error);
-    alert("Lỗi hệ thống, vui lòng thử lại!");
+    console.error("❌ Lỗi khi đặt hàng:", error);
+    showAlert("Lỗi", "Lỗi hệ thống, vui lòng thử lại!");
   }
 };
+
 
 
 
