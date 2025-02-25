@@ -88,8 +88,7 @@
     <!-- Bọc ảnh trong router-link -->
     <router-link :to="'/tabs/tab4/' + item.maSP">
       <img :src="item.hinh" alt="A road bike"
-        class="w-[400px] h-[150px] object-cover rounded-lg cursor-pointer"
-        width="200" height="200" />
+        class="w-full h-[150px] object-cover rounded-lg cursor-pointer" />
     </router-link>
 
     <div class="absolute top-4 right-4 text-blue-500">
