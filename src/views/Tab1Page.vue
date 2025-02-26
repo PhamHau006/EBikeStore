@@ -17,14 +17,14 @@
 
       <div class="bg-gray-900 text-white font-sans p-4 h-screen ">
         <div class="flex justify-between items-center">
-          <div class="text-lg">9:41</div>
+          
           <div class="flex items-center space-x-2">
             <div class="w-4 h-4 bg-white rounded-full"></div>
             <div class="w-4 h-4 bg-white rounded-full"></div>
             <div class="w-4 h-4 bg-white rounded-full"></div>
           </div>
         </div>
-        <h1 class="text-2xl font-bold mt-4">Choose Your Bike</h1>
+        <h1 class="text-2xl font-bold mt-4">Ebike Shop</h1>
         <div class="relative mt-4">
           <img src="https://storage.googleapis.com/a1aa/image/E_dvRxGd8X24mvIrzxBa35IJyoLfZS-tYea9Pt0PxMQ.jpg"
             alt="A modern road bike" class="w-full rounded-lg" width="600" height="400" />
@@ -53,7 +53,7 @@
           <input type="text" placeholder="Search" class="w-full p-2 rounded-lg bg-gray-800 text-white" />
           <i class="fas fa-search absolute right-4 top-3 text-gray-400"></i>
         </div>
-        <h2 class="text-xl font-bold mt-4">Best Selling</h2>
+        <h2 class="text-xl font-bold mt-4">Sản phẩm bán chạy</h2>
         <swiper :slides-per-view="1" :space-between="10" class="mt-4">
           <swiper-slide v-for="items in product" :key="items.maSP" class="relative bg-gray-800 rounded-lg p-4">
   <!-- Khi click vào ảnh, chuyển đến Tab4Page.vue -->

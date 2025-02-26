@@ -396,6 +396,7 @@ onMounted(() => {
     fullname.value = user.fullName || "";
     phone.value = user.phone || "";
     address.value = user.address || "";
+  
   }
 });
 
@@ -410,7 +411,6 @@ const calculateTotalAfterDiscount = () => {
 
   return Math.max(totalAfterDiscount, 0); // Đảm bảo không bị âm
 };
-
 const submitOrder = async () => {
   // 🛑 Kiểm tra xem thông tin giao hàng có đầy đủ không
   if (!fullname.value || !phone.value || !address.value) {
@@ -470,11 +470,22 @@ const submitOrder = async () => {
     MaCoupon: selectedCoupon.value ? selectedCoupon.value.code : null,
   };
 
+  // Lấy access token từ localStorage
+  const token = localStorage.getItem("AccessToken");
+  if (!token) {
+    showAlert("Lỗi", "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+    router.push("/login");
+    return;
+  }
+
   try {
     // 📢 Gửi yêu cầu đến API
     const response = await fetch("https://localhost:7137/api/Checkouts/CheckoutOrders", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`  // Đính kèm token vào header
+      },
       body: JSON.stringify(orderData),
     });
 
@@ -495,13 +506,15 @@ const submitOrder = async () => {
       localStorage.removeItem("cart"); // 🗑️ Xóa giỏ hàng sau khi đặt thành công
       router.push("/tabs/orderhistory");
     } else {
-      showAlert("Lỗi", result.Message || "Thanh toán thất bại.");
+      showAlert("Lỗi", result.Message || "Thanh toán thành công.");
     }
   } catch (error) {
     console.error("❌ Lỗi khi đặt hàng:", error);
     showAlert("Lỗi", "Lỗi hệ thống, vui lòng thử lại!");
   }
 };
+
+
 
 
 
